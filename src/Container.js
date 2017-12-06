@@ -39,9 +39,9 @@ export default class Container extends React.Component {
           USDMyPrice: 0 //CurrentPrice *Amount
         },
         {
-          Symbol: "BURST",
-          CoinName: "Burst",
-          Amount: 1496.25,
+          Symbol: "SC",
+          CoinName: "Siacoin",
+          Amount: 997.5,
           CurrentPrice: 0, //Price of crypto fetched
           USDMyPrice: 0 //CurrentPrice *Amount
         }
