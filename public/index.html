@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="viewport" content="width=device-width,height=device-height, initial-scale=1.0, maximum-scale=1, minimum-scale=1, user-scalable=no">
   <meta name="theme-color" content="#000000">
   <!--
     manifest.json provides metadata used when your web app is added to the
@@ -20,10 +20,36 @@
     Learn how to configure a non-root public URL by running `npm run build`.
   -->
   <title>React App</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+ crossorigin="anonymous">
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+ crossorigin="anonymous">
   
 </head>
 <body>
+
+
+  <script src="https://www.gstatic.com/firebasejs/4.7.0/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+    var config = {
+      apiKey: "AIzaSyB_QyqHnwxq78orNOy6k4qgqFUep_js4h4",
+      authDomain: "mycryptocoins-9dd8c.firebaseapp.com",
+      databaseURL: "https://mycryptocoins-9dd8c.firebaseio.com",
+      projectId: "mycryptocoins-9dd8c",
+      storageBucket: "mycryptocoins-9dd8c.appspot.com",
+      messagingSenderId: "510594825101"
+    };
+    window._firebase.initializeApp(config);
+	 window._database = _firebase.database();
+
+  </script>
+
+
   <div id="root"></div>
+
+
+
   <!--
     This HTML file is a template.
     If you open it directly in the browser, you will see an empty page.

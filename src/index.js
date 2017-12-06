@@ -1,11 +1,11 @@
-import React from 'react';
-import { render } from 'react-dom';
-import Container from './Container';
-
-
+import React from "react";
+import { render } from "react-dom";
+import Container from "./Container";
 
 const App = () => (
-    <Container  />
+  <div className="container-fluid">
+    <Container />
+  </div>
 );
 
-render(<App />, document.getElementById('root'));
+render(<App />, document.getElementById("root"));
