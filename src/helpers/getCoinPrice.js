@@ -1,10 +1,13 @@
-const fetchCoins = () => {
+const fetchCoinPrice = Symbol => {
   return new Promise((resolve, reject) => {
     var myInit = {
       method: "GET"
     };
 
-    fetch("https://min-api.cryptocompare.com/data/all/coinlist", myInit)
+    fetch(
+      `https://min-api.cryptocompare.com/data/price?fsym=${Symbol}&tsyms=USD`,
+      myInit
+    )
       .then(function(response) {
         return response.json();
       })
@@ -16,4 +19,4 @@ const fetchCoins = () => {
       });
   });
 };
-export default fetchCoins;
+export default fetchCoinPrice;
