@@ -13,7 +13,7 @@ export default class Container extends React.Component {
         {
           Symbol: "BTC",
           CoinName: "Bitcoin",
-          Amount: 0.00287011,
+          Amount: 0.01310388,
           CurrentPrice: 0, //Price of crypto fetched
           USDMyPrice: 0 //CurrentPrice *Amount
         },
@@ -27,7 +27,7 @@ export default class Container extends React.Component {
         {
           Symbol: "XLM",
           CoinName: "Stellar",
-          Amount: 2093.132443245,
+          Amount: 3190.38243246,
           CurrentPrice: 0, //Price of crypto fetched
           USDMyPrice: 0 //CurrentPrice *Amount
         },
@@ -42,6 +42,76 @@ export default class Container extends React.Component {
           Symbol: "SC",
           CoinName: "Siacoin",
           Amount: 997.5,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "NXT",
+          CoinName: "NEXT",
+          Amount: 585.69825782,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "XRP",
+          CoinName: "Ripple",
+          Amount: 218.05156623,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "GRC",
+          CoinName: "Gridcoin Research",
+          Amount: 99.85,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "DGB",
+          CoinName: "DigiByte",
+          Amount: 99.75,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "FLDC",
+          CoinName: "FoldingCoin",
+          Amount: 79.8,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "PINK",
+          CoinName: "Pinkcoin",
+          Amount: 49.875,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "BTS",
+          CoinName: "BitShares",
+          Amount: 39.9,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "EMC2",
+          CoinName: "Einstenium",
+          Amount: 1.997,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "ETH",
+          CoinName: "Ethereum",
+          Amount: 0.212631,
+          CurrentPrice: 0, //Price of crypto fetched
+          USDMyPrice: 0 //CurrentPrice *Amount
+        },
+        {
+          Symbol: "BCH",
+          CoinName: "Bitcoin Cash",
+          Amount: 0.00955,
           CurrentPrice: 0, //Price of crypto fetched
           USDMyPrice: 0 //CurrentPrice *Amount
         }
