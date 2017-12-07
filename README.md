@@ -1,7 +1,7 @@
 Crap to track my coins (no keys here, just what i have vs price in USD)
 
 
-https://goo.gl/5eNyxD 
+https://tacho87.github.io/mycoins/
 
 Put your email in the prompt to create your portfolio. Add your coins (name, symbol, amount you own) and thats it. 
 It refreshes every 60s.
