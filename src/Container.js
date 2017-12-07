@@ -3,6 +3,9 @@ import FetchCoins from "./helpers/getCoins.js";
 import CrawlCoins from "./helpers/crawlCoins.js";
 import FetchCoinPrice from "./helpers/getCoinPrice.js";
 import Numeral from "numeral";
+const firebase = require("firebase");
+// Required for side-effects
+require("firebase/firestore");
 
 export default class Container extends React.Component {
   constructor(props) {
@@ -118,9 +121,20 @@ export default class Container extends React.Component {
       ],
       totalPrice: 0.0
     };
+    this.db = null;
+  }
+  initFireBase() {
+    firebase.initializeApp({
+      apiKey: "AIzaSyB_QyqHnwxq78orNOy6k4qgqFUep_js4h4",
+      authDomain: "mycryptocoins-9dd8c.firebaseapp.com",
+      projectId: "mycryptocoins-9dd8c"
+    });
+    this.db = firebase.firestore();
   }
   async componentDidMount() {
     try {
+      this.initFireBase();
+
       let coins = localStorage.getItem("coinlist");
 
       if (!coins) coins = CrawlCoins(await FetchCoins());
