@@ -5,6 +5,8 @@ import FetchCoinPrice from "./helpers/getCoinPrice.js";
 import Numeral from "numeral";
 import { debounce, throttle } from "lodash";
 
+//Anastacio Gianareas Palm
+
 const firebase = require("firebase");
 // Required for side-effects
 require("firebase/firestore");
@@ -24,6 +26,25 @@ export default class Container extends React.Component {
     this.deleteCryptoHandler = debounce(this.deleteCrypto, 1000);
     this.changeCrypto = this.changeCrypto.bind(this);
     this.fetchAllCoins = this.fetchAllCoins.bind(this);
+  }
+
+  componentDidMount() {
+    let email = localStorage.getItem("email");
+    if (!email) {
+      email = prompt("What is your email?");
+      localStorage.setItem("email", email);
+    }
+    this.setState({ email: email }, () => {
+      try {
+        this.initFireBase();
+        this.fetchClientCrypto();
+
+        //Fetch each coin price
+        setInterval(this.fetchCoinPricesAndCalculate.bind(this), 60000);
+      } catch (e) {
+        alert(e);
+      }
+    });
   }
   addNewCrypto() {
     this.db
@@ -77,24 +98,6 @@ export default class Container extends React.Component {
     this.updateCryptoHandler(index);
   }
 
-  componentDidMount() {
-    let email = localStorage.getItem("email");
-    if (!email) {
-      email = prompt("What is your email?");
-      localStorage.setItem("email", email);
-    }
-    this.setState({ email: email }, () => {
-      try {
-        this.initFireBase();
-        this.fetchClientCrypto();
-
-        //Fetch each coin price
-        setInterval(this.fetchCoinPricesAndCalculate.bind(this), 60000);
-      } catch (e) {
-        alert(e);
-      }
-    });
-  }
   async fetchAllCoins() {
     debugger;
     let coins = localStorage.getItem("coinlist");
@@ -163,10 +166,21 @@ export default class Container extends React.Component {
       this.calculateTotalAmount();
     });
   }
-
+  async fetchOnePriceAndUpdateList(index, Symbol) {
+    try {
+      let price = await FetchCoinPrice(Symbol);
+      let coins = [...this.state.coins];
+      coins[index].Amount = price.USD;
+      this.setState({
+        coins: coins
+      });
+    } catch (e) {
+      console.error("error fetching ", e);
+    }
+  }
   renderCoins() {
     let border = {
-      border: "solid thin black",
+      border: "solid thin #cac7c7",
       borderRadius: "4px",
       padding: "10px"
     };
@@ -184,13 +198,29 @@ export default class Container extends React.Component {
             <strong>Total Coins:</strong>{" "}
             {Numeral(e.TotalCoinSupply).format("0,0")}
           </p>
+          {e.Amount ? (
+            <p>
+              <strong>USD Price:</strong>{" "}
+              {Numeral(e.Amount).format("$0,0.000000000")}
+            </p>
+          ) : (
+            <span />
+          )}
+          <button
+            className="btn btn-info"
+            onClick={() => {
+              this.fetchOnePriceAndUpdateList(i, e.Symbol);
+            }}
+          >
+            Fetch Price
+          </button>
         </div>
       );
     });
   }
   renderMyCoins() {
     let border = {
-      border: "solid thin black",
+      border: "solid thin #cac7c7",
       borderRadius: "4px",
       padding: "10px"
     };
@@ -263,6 +293,9 @@ export default class Container extends React.Component {
     return (
       <div className="col-sm-12 col-xs-12">
         <div className="row">
+          <div className="col-sm-12 col-xs-12">
+            <h4 className="text-center">Crypto Price Tracker</h4>
+          </div>
           <div className="col-sm-5 col-xs-5">
             <p>List of Coins {this.state.coins.length + 1}</p>
             <button className="btn btn-info" onClick={this.fetchAllCoins}>
