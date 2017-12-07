@@ -8,7 +8,7 @@ It refreshes every 60s.
 
 License: you can fork it and do what you want. Code is ghetto so good luck.
 
-![pic](https://user-images.githubusercontent.com/2301812/33744403-0bc026e2-db7f-11e7-90a8-0219438b1764.png
+![screenshot](https://user-images.githubusercontent.com/2301812/33744403-0bc026e2-db7f-11e7-90a8-0219438b1764.png)
 
 Tech: 
 1. ReactJs 16+
