@@ -1,5 +1,5 @@
-Crap to track my coins (no keys here, just what i have vs price in USD)
-
+Track your cryptocurrency(bitcoins) USD price (no keys here, just what i have vs price in USD)
+Usage: just put it as your default page. 
 
 https://tacho87.github.io/mycoins/
 
