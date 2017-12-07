@@ -5,6 +5,8 @@ import FetchCoinPrice from "./helpers/getCoinPrice.js";
 import Numeral from "numeral";
 import { debounce, throttle } from "lodash";
 
+//Anastacio Gianareas Palm
+
 const firebase = require("firebase");
 // Required for side-effects
 require("firebase/firestore");
