@@ -4,6 +4,7 @@ import CrawlCoins from "./helpers/crawlCoins.js";
 import FetchCoinPrice from "./helpers/getCoinPrice.js";
 import Numeral from "numeral";
 const firebase = require("firebase");
+import { debounce, throttle } from "lodash";
 // Required for side-effects
 require("firebase/firestore");
 
@@ -11,117 +12,99 @@ export default class Container extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      email: "",
       coins: [],
-      mycoins: [
-        {
-          Symbol: "BTC",
-          CoinName: "Bitcoin",
-          Amount: 0.01310388,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "DOGE",
-          CoinName: "Dogecoin",
-          Amount: 5985,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "XLM",
-          CoinName: "Stellar",
-          Amount: 3190.38243246,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "BURST",
-          CoinName: "Burst",
-          Amount: 1496.25,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "SC",
-          CoinName: "Siacoin",
-          Amount: 997.5,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "NXT",
-          CoinName: "NEXT",
-          Amount: 585.69825782,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "XRP",
-          CoinName: "Ripple",
-          Amount: 218.05156623,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "GRC",
-          CoinName: "Gridcoin Research",
-          Amount: 99.85,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "DGB",
-          CoinName: "DigiByte",
-          Amount: 99.75,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "FLDC",
-          CoinName: "FoldingCoin",
-          Amount: 79.8,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "PINK",
-          CoinName: "Pinkcoin",
-          Amount: 49.875,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "BTS",
-          CoinName: "BitShares",
-          Amount: 39.9,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "EMC2",
-          CoinName: "Einstenium",
-          Amount: 1.997,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "ETH",
-          CoinName: "Ethereum",
-          Amount: 0.212631,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        },
-        {
-          Symbol: "BCH",
-          CoinName: "Bitcoin Cash",
-          Amount: 0.00955,
-          CurrentPrice: 0, //Price of crypto fetched
-          USDMyPrice: 0 //CurrentPrice *Amount
-        }
-      ],
+      mycoins: [],
       totalPrice: 0.0
     };
     this.db = null;
+    this.addNewCryptoHandler = debounce(this.addNewCrypto, 2000);
+    this.updateCryptoHandler = debounce(this.updateCrypto, 2000);
+    this.deleteCryptoHandler = debounce(this.deleteCrypto, 1000);
+    this.changeCrypto = this.changeCrypto.bind(this);
+    this.fetchAllCoins = this.fetchAllCoins.bind(this);
+  }
+  addNewCrypto() {
+    this.db
+      .collection("Crypto")
+      .add({ CoinName: "", Symbol: "", Amount: 0, email: this.state.email })
+      .then(() => {
+        this.fetchClientCrypto();
+      })
+      .catch(error => {
+        console.error("Error adding document: ", error);
+      });
+  }
+  updateCrypto(index) {
+    this.db
+      .collection("Crypto")
+      .doc(this.state.mycoins[index].id)
+      .update({
+        Amount: this.state.mycoins[index].Amount,
+        CoinName: this.state.mycoins[index].CoinName,
+        Symbol: this.state.mycoins[index].Symbol
+      })
+      .then(() => {
+        this.fetchClientCrypto();
+      })
+      .catch(error => {
+        console.error("Error adding document: ", error);
+      });
+  }
+  deleteCrypto(index) {
+    if (confirm("Are you sure you want to delete?")) {
+      this.db
+        .collection("Crypto")
+        .doc(this.state.mycoins[index].id)
+        .delete()
+        .then(() => {
+          this.fetchClientCrypto();
+        })
+        .catch(error => {
+          console.error("Error adding document: ", error);
+        });
+    }
+  }
+  changeCrypto(index, e, t) {
+    let coins = [...this.state.mycoins];
+
+    if (t === "CoinName") coins[index].CoinName = e.target.value;
+    if (t === "Symbol") coins[index].Symbol = e.target.value;
+    if (t === "Amount") coins[index].Amount = e.target.value;
+
+    this.setState({ mycoins: coins });
+    this.updateCryptoHandler(index);
+  }
+
+  componentDidMount() {
+    let email = localStorage.getItem("email");
+    if (!email) {
+      email = prompt("What is your email?");
+      localStorage.setItem("email", email);
+    }
+    this.setState({ email: email }, () => {
+      try {
+        this.initFireBase();
+        this.fetchClientCrypto();
+
+        //Fetch each coin price
+        setInterval(this.fetchCoinPricesAndCalculate.bind(this), 60000);
+      } catch (e) {
+        alert(e);
+      }
+    });
+  }
+  async fetchAllCoins() {
+    debugger;
+    let coins = localStorage.getItem("coinlist");
+
+    if (!coins) coins = CrawlCoins(await FetchCoins());
+    else coins = JSON.parse(coins);
+
+    coins.sort((a, b) => b.TotalCoinSupply - a.TotalCoinSupply);
+    this.setState({ coins: [...coins] }, () => {
+      localStorage.setItem("coinlist", JSON.stringify(coins));
+    });
   }
   initFireBase() {
     firebase.initializeApp({
@@ -130,26 +113,36 @@ export default class Container extends React.Component {
       projectId: "mycryptocoins-9dd8c"
     });
     this.db = firebase.firestore();
+    debugger;
   }
-  async componentDidMount() {
-    try {
-      this.initFireBase();
+  fetchClientCrypto() {
+    if (this.db === null) return;
+    this.db
+      .collection("Crypto")
+      .where("email", "==", this.state.email)
+      .get()
+      .then(querySnapshot => {
+        let mycoins = [];
+        let coin = {};
+        querySnapshot.forEach(function(doc) {
+          coin = doc.data();
+          coin.id = doc.id;
 
-      let coins = localStorage.getItem("coinlist");
+          mycoins.push(coin);
+        });
 
-      if (!coins) coins = CrawlCoins(await FetchCoins());
-      else coins = JSON.parse(coins);
-
-      this.setState({ coins: [...coins] }, () => {
-        localStorage.setItem("coinlist", JSON.stringify(coins));
+        this.setState({
+          mycoins: mycoins
+        });
+      })
+      .then(() => {
+        console.info("fetched client coins");
         this.fetchCoinPricesAndCalculate();
+      })
+      .catch(error => {
+        console.log("Error getting documents: ", error);
       });
-      //Fetch each coin price
-    } catch (e) {
-      alert(e);
-    }
   }
-
   fetchCoinPricesAndCalculate() {
     //This is a slow proccess due to api constraints
 
@@ -162,6 +155,10 @@ export default class Container extends React.Component {
       } catch (e) {
         console.error("failed to fetch ", e.Symbol);
       }
+      let coins = this.state.mycoins.sort(
+        (a, b) => b.USDMyPrice - a.USDMyPrice
+      );
+      this.setState({ mycoins: coins });
       this.calculateTotalAmount();
     });
   }
@@ -201,23 +198,57 @@ export default class Container extends React.Component {
         <div key={i} style={border}>
           Index: {i + 1}
           <p>
-            <strong>Name:</strong> {e.CoinName}
+            <strong>Name: </strong>
+            <input
+              type="text"
+              className="form-control"
+              value={e.CoinName}
+              onChange={e => {
+                e.persist();
+                this.changeCrypto(i, e, "CoinName");
+              }}
+            />
           </p>
           <p>
-            <strong>Symbol:</strong> {e.Symbol}
+            <strong>Symbol: </strong>
+            <input
+              className="form-control"
+              type="text"
+              value={e.Symbol}
+              onChange={e => {
+                e.persist();
+                this.changeCrypto(i, e, "Symbol");
+              }}
+            />
           </p>
           <p>
-            <strong>Amount:</strong>{" "}
-            {Numeral(e.Amount).format("0,0.0000000000000")}
+            <strong>Amount:</strong>
+            <input
+              type="text"
+              className="form-control"
+              value={Numeral(e.Amount).format("0,0.00000000000")}
+              onChange={e => {
+                e.persist();
+                this.changeCrypto(i, e, "Amount");
+              }}
+            />
           </p>
           <p>
             <strong>Current Price:</strong>{" "}
             {Numeral(e.CurrentPrice).format("$0,0.000")}
           </p>
-          <p>
+          <p className="text-success">
             <strong>What I have:</strong>{" "}
             {Numeral(e.USDMyPrice).format("$0,0.000")}
           </p>
+          <button
+            className="btn btn-danger"
+            onClick={e => {
+              this.deleteCryptoHandler(i);
+            }}
+          >
+            Delete Coin
+          </button>
         </div>
       );
     });
@@ -233,10 +264,37 @@ export default class Container extends React.Component {
         <div className="row">
           <div className="col-sm-5 col-xs-5">
             <p>List of Coins {this.state.coins.length + 1}</p>
+            <button className="btn btn-info" onClick={this.fetchAllCoins}>
+              Fetch all Coins
+            </button>
             {this.renderCoins()}
           </div>
           <div className="col-sm-7 col-xs-7">
-            <p>My Coins {Numeral(this.state.totalPrice).format("$0,0.000")}</p>
+            <p>
+              My Coins ({this.state.mycoins.length}){" "}
+              <label className="text-success">
+                {Numeral(this.state.totalPrice).format("$0,0.000")}
+              </label>
+            </p>
+            <button
+              className="btn btn-primary"
+              onClick={e => {
+                this.addNewCryptoHandler();
+              }}
+            >
+              Add New Coin
+            </button>{" "}
+            {" "}
+            <button
+              className="btn btn-warning"
+              onClick={e => {
+                localStorage.clear();
+                window.location.reload;
+              }}
+            >
+              Logoff
+            </button>
+            <br /> <br />
             {this.renderMyCoins()}
           </div>
         </div>
