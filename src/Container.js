@@ -3,8 +3,9 @@ import FetchCoins from "./helpers/getCoins.js";
 import CrawlCoins from "./helpers/crawlCoins.js";
 import FetchCoinPrice from "./helpers/getCoinPrice.js";
 import Numeral from "numeral";
-const firebase = require("firebase");
 import { debounce, throttle } from "lodash";
+
+const firebase = require("firebase");
 // Required for side-effects
 require("firebase/firestore");
 
@@ -52,7 +53,7 @@ export default class Container extends React.Component {
       });
   }
   deleteCrypto(index) {
-    if (confirm("Are you sure you want to delete?")) {
+    if (window.confirm("Are you sure you want to delete?")) {
       this.db
         .collection("Crypto")
         .doc(this.state.mycoins[index].id)
