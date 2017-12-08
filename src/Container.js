@@ -52,8 +52,9 @@ export default class Container extends React.Component {
 	}
 	//Logic
 	calculateTotalAmount() {
+		const { mycoins } = this.state;
 		let totalPrice = 0.0;
-		this.state.mycoins.map(e => (totalPrice = totalPrice + e.USDMyPrice));
+		mycoins.map(e => (totalPrice = totalPrice + e.USDMyPrice));
 		this.setState({ totalPrice: totalPrice });
 	}
 	predictorCalculate() {
@@ -75,13 +76,14 @@ export default class Container extends React.Component {
 		});
 	}
 	addNewCrypto() {
+		const { email } = this.state;
 		this.db
 			.collection("Crypto")
 			.add({
 				CoinName: "",
 				Symbol: "",
 				Amount: 0,
-				email: this.state.email
+				email: email
 			})
 			.then(() => {
 				//this.fetchClientCrypto();
@@ -91,16 +93,17 @@ export default class Container extends React.Component {
 			});
 	}
 	updateCrypto(index) {
+		const { mycoins } = this.state;
 		this.db
 			.collection("Crypto")
-			.doc(this.state.mycoins[index].id)
+			.doc(mycoins[index].id)
 			.update({
 				Amount:
-					parseFloat(this.state.mycoins[index].Amount) !== NaN
-						? parseFloat(this.state.mycoins[index].Amount)
+					parseFloat(mycoins[index].Amount) !== NaN
+						? parseFloat(mycoins[index].Amount)
 						: 0,
-				CoinName: this.state.mycoins[index].CoinName,
-				Symbol: this.state.mycoins[index].Symbol
+				CoinName: mycoins[index].CoinName,
+				Symbol: mycoins[index].Symbol
 			})
 			.then(() => {
 				//this.fetchClientCrypto();
@@ -111,9 +114,10 @@ export default class Container extends React.Component {
 	}
 	deleteCrypto(index) {
 		if (window.confirm("Are you sure you want to delete?")) {
+			const { mycoins } = this.state;
 			this.db
 				.collection("Crypto")
-				.doc(this.state.mycoins[index].id)
+				.doc(mycoins[index].id)
 				.delete()
 				.then(() => {
 					this.fetchClientCrypto();
@@ -143,12 +147,10 @@ export default class Container extends React.Component {
 			projectId: "mycryptocoins-9dd8c"
 		});
 		this.db = firebase.firestore();
-		debugger;
 	}
 
 	//Fetches
 	async fetchAllCoins() {
-		debugger;
 		let coins = localStorage.getItem("coinlist");
 
 		if (!coins) coins = CrawlCoins(await FetchCoins());
@@ -159,12 +161,39 @@ export default class Container extends React.Component {
 			localStorage.setItem("coinlist", JSON.stringify(coins));
 		});
 	}
+	//TODO: Not finished, querySnapshot.data(); does not work
+	//      Create CRU for amout next to total amout.
+	fetchClientInvestedAmount() {
+		if (this.db === null) return;
 
+		const { investedSoFar, email } = this.state;
+		this.db
+			.collection("Invested")
+			.where("email", "==", email)
+			.get()
+			.then(querySnapshot => {
+				debugger;
+				let invested = Object({}, investedSoFar);
+				invested = querySnapshot.data();
+				invested.id = querySnapshot.is;
+
+				this.setState({
+					investedSoFar: invested
+				});
+			})
+			.then(() => {})
+			.catch(error => {
+				console.log("Error getting documents: ", error);
+			});
+	}
 	fetchClientCrypto() {
 		if (this.db === null) return;
+
+		const { email } = this.state;
+
 		this.db
 			.collection("Crypto")
-			.where("email", "==", this.state.email)
+			.where("email", "==", email)
 			.get()
 			.then(querySnapshot => {
 				let mycoins = [];
@@ -189,7 +218,8 @@ export default class Container extends React.Component {
 			});
 	}
 	async fetchCoinPricesAndCalculate() {
-		let symbols = this.state.mycoins.map(e => e.Symbol).join();
+		const { mycoins } = this.state;
+		let symbols = mycoins.map(e => e.Symbol).join();
 
 		let responseCoins = null;
 		try {
@@ -198,7 +228,7 @@ export default class Container extends React.Component {
 			console.error("failed to fetch ", e);
 		}
 
-		this.state.mycoins.map((e, i) => {
+		mycoins.map((e, i) => {
 			if (responseCoins != null && responseCoins[e.Symbol]) {
 				let COIN = responseCoins[e.Symbol].USD;
 				e.CurrentPrice = COIN.PRICE;
@@ -223,9 +253,7 @@ export default class Container extends React.Component {
 			}
 			this.forceUpdate();
 		});
-		let coins = this.state.mycoins.sort(
-			(a, b) => b.USDMyPrice - a.USDMyPrice
-		);
+		let coins = mycoins.sort((a, b) => b.USDMyPrice - a.USDMyPrice);
 		this.setState({ mycoins: coins });
 		this.calculateTotalAmount();
 	}
@@ -250,7 +278,8 @@ export default class Container extends React.Component {
 			borderRadius: "4px",
 			padding: "10px"
 		};
-		return this.state.coins.map((e, i) => {
+		const { coins } = this.state;
+		return coins.map((e, i) => {
 			return (
 				<div key={i} style={border}>
 					Index: {i + 1}
@@ -290,7 +319,8 @@ export default class Container extends React.Component {
 			borderRadius: "4px",
 			padding: "10px"
 		};
-		return this.state.mycoins.map((e, i) => {
+		const { mycoins } = this.state;
+		return mycoins.map((e, i) => {
 			return (
 				<div key={i} style={border}>
 					<div className="row">
@@ -557,7 +587,8 @@ export default class Container extends React.Component {
 		);
 	}
 	render() {
-		if (this.state.showPredictor) return this.renderPredictor();
+		const { mycoins, showPredictor, totalPrice, coins } = this.state;
+		if (showPredictor) return this.renderPredictor();
 
 		return (
 			<div className="col-sm-12 col-xs-12">
@@ -568,11 +599,9 @@ export default class Container extends React.Component {
 
 					<div className="col-sm-12 col-xs-12">
 						<p>
-							My Coins ({this.state.mycoins.length}){" "}
+							My Coins ({mycoins.length}){" "}
 							<label className="text-success">
-								{Numeral(this.state.totalPrice).format(
-									"$0,0.000"
-								)}
+								{Numeral(totalPrice).format("$0,0.000")}
 							</label>
 						</p>
 						<button
@@ -596,7 +625,10 @@ export default class Container extends React.Component {
 					</div>
 
 					<div className="col-sm-12 col-xs-12">
-						<p>List of Coins {this.state.coins.length + 1}</p>
+						<p>
+							List of Coins{" "}
+							{coins.length === 0 ? 0 : coins.length + 1}
+						</p>
 						<button
 							className="btn btn-info"
 							onClick={this.fetchAllCoins}>
