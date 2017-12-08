@@ -19,7 +19,10 @@ export default class Container extends React.Component {
 			email: "",
 			coins: [],
 			mycoins: [],
-			totalPrice: 0.0
+			totalPrice: 0.0,
+			showPredictor: false,
+			predictorObject: null,
+			investedSoFar: 0
 		};
 		this.db = null;
 		this.addNewCryptoHandler = debounce(this.addNewCrypto, 2000);
@@ -53,7 +56,24 @@ export default class Container extends React.Component {
 		this.state.mycoins.map(e => (totalPrice = totalPrice + e.USDMyPrice));
 		this.setState({ totalPrice: totalPrice });
 	}
+	predictorCalculate() {
+		const { predictorObject } = this.state;
+
+		predictorObject.USDMyPrice =
+			predictorObject.CurrentPrice * predictorObject.Amount;
+		this.setState({
+			predictorObject: Object.assign({}, predictorObject)
+		});
+	}
+
 	//Handlers
+	predictor(coin) {
+		let newCoin = JSON.parse(JSON.stringify(coin)); //To avoid shallow from object.assign
+		newCoin.OriginalAmount = newCoin.Amount;
+		this.setState({
+			predictorObject: newCoin
+		});
+	}
 	addNewCrypto() {
 		this.db
 			.collection("Crypto")
@@ -263,6 +283,7 @@ export default class Container extends React.Component {
 			);
 		});
 	}
+
 	renderMyCoins() {
 		let border = {
 			border: "solid thin #cac7c7",
@@ -272,17 +293,34 @@ export default class Container extends React.Component {
 		return this.state.mycoins.map((e, i) => {
 			return (
 				<div key={i} style={border}>
-					<label className="text text-primary">
-						{i + 1} - {e.CoinName}
-					</label>
-					<button
-						className="btn btn-default pull-right"
-						onClick={e => {
-							this.fetchClientCrypto();
-						}}>
-						<i className="fa fa-refresh" aria-hidden="true" />
-					</button>
 					<div className="row">
+						<div className="col-xs-12 col-sm-12">
+							<label className="text text-primary pull-left">
+								{i + 1} - {e.CoinName}
+							</label>
+							<button
+								className="btn btn-default pull-right"
+								onClick={() => {
+									this.predictor(e);
+									this.setState({ showPredictor: true });
+								}}>
+								<i
+									className="fa fa-code-fork"
+									aria-hidden="true"
+								/>
+							</button>
+							<button
+								className="btn btn-default pull-right "
+								onClick={e => {
+									this.fetchClientCrypto();
+								}}>
+								<i
+									className="fa fa-refresh"
+									aria-hidden="true"
+								/>
+							</button>
+						</div>
+
 						<div className="col-sm-6 col-xs-6">
 							<p>
 								<strong>Name: </strong>
@@ -367,7 +405,7 @@ export default class Container extends React.Component {
 							</p>
 							<p>
 								<strong>Low Day:</strong>{" "}
-								{Numeral(e.MarketCap).format("$0,0.0000")}
+								{Numeral(e.LowDay).format("$0,0.0000")}
 							</p>
 
 							<h5 className="text text-primary">Open 24 Hours</h5>
@@ -414,7 +452,113 @@ export default class Container extends React.Component {
 		});
 	}
 
+	renderPredictor() {
+		const { showPredictor, predictorObject } = this.state;
+		if (!showPredictor) return <span />;
+
+		return (
+			<div className="col-sm-12 col-xs-12">
+				<button
+					className="btn btn-warning pull-right"
+					onClick={e => {
+						this.setState({
+							showPredictor: false,
+							predictorObject: null
+						});
+					}}>
+					<i className="fa fa-times-circle" aria-hidden="true" />{" "}
+					Close
+				</button>
+				<p>
+					<strong>Name: {predictorObject.CoinName}</strong>
+				</p>
+				<p>
+					<strong>Symbol: {predictorObject.Symbol}</strong>
+				</p>
+				<p>
+					<strong>
+						Amount:{" "}
+						{Numeral(predictorObject.Amount).format(
+							"0,0.00000000000"
+						)}
+					</strong>
+					<input
+						type="text"
+						className="form-control"
+						value={predictorObject.Amount}
+						onChange={e => {
+							let pObj = Object.assign(
+								{},
+								this.state.predictorObject
+							);
+							pObj.Amount = e.target.value;
+							this.setState(
+								{
+									predictorObject: pObj
+								},
+								this.predictorCalculate
+							);
+						}}
+					/>
+				</p>
+				<p>
+					<strong>Current Price:</strong>{" "}
+					{Numeral(predictorObject.CurrentPrice).format("$0,0.0000")}
+					<input
+						type="text"
+						className="form-control"
+						value={predictorObject.CurrentPrice}
+						onChange={e => {
+							let pObj = Object.assign(
+								{},
+								this.state.predictorObject
+							);
+							pObj.CurrentPrice = e.target.value;
+							this.setState(
+								{
+									predictorObject: pObj
+								},
+								this.predictorCalculate
+							);
+						}}
+					/>
+				</p>
+				<p className="text-success">
+					<strong>What I have:</strong>{" "}
+					{Numeral(predictorObject.USDMyPrice).format("$0,0.0000")}
+				</p>
+				<hr style={{ borderTop: "solid thin #75b5bb" }} />
+				<br />
+				<p className="text text-info">
+					<i>
+						Currently you have{" "}
+						<strong>{predictorObject.OriginalAmount}</strong> Coins.
+					</i>
+				</p>
+				<p className="text text-info">
+					<i>
+						It will cost you to get{" "}
+						<strong>
+							{predictorObject.Amount -
+								predictorObject.OriginalAmount}
+						</strong>{" "}
+						more at a price{" "}
+						<strong>{predictorObject.CurrentPrice}</strong>:{" "}
+						<strong>
+							{Numeral(
+								(predictorObject.Amount -
+									predictorObject.OriginalAmount) *
+									predictorObject.CurrentPrice
+							).format("$0,0.0000")}
+						</strong>
+					</i>
+				</p>
+			</div>
+		);
+	}
 	render() {
+		if (this.state.showPredictor) return this.renderPredictor();
+
 		return (
 			<div className="col-sm-12 col-xs-12">
 				<div className="row">
