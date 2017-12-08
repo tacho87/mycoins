@@ -272,7 +272,9 @@ export default class Container extends React.Component {
 		return this.state.mycoins.map((e, i) => {
 			return (
 				<div key={i} style={border}>
-					Index: {i + 1}
+					<label className="text text-primary">
+						{i + 1} - {e.CoinName}
+					</label>
 					<button
 						className="btn btn-default pull-right"
 						onClick={e => {
