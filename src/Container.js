@@ -32,7 +32,7 @@ export default class Container extends React.Component {
 	componentDidMount() {
 		let email = localStorage.getItem("email");
 		if (!email) {
-			email = prompt("What is your email?");
+			email = prompt("What is your email?").toLocaleLowerCase();
 			localStorage.setItem("email", email);
 		}
 		this.setState({ email: email }, () => {
