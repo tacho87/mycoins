@@ -374,7 +374,19 @@ export default class Container extends React.Component {
 
 							<p>
 								<strong>Change 24 Hours:</strong>{" "}
-								{Numeral(e.Change24Hour).format("$0,0.0000")}
+								{e.Change24Hour > 0 ? (
+									<label className="text text-success">
+										{Numeral(e.Change24Hour).format(
+											"$0,0.0000"
+										)}
+									</label>
+								) : (
+									<label className="text text-danger">
+										{Numeral(e.Change24Hour).format(
+											"$0,0.0000"
+										)}
+									</label>
+								)}
 							</p>
 							<p>
 								<strong>Open 24 Hour: </strong>{" "}
@@ -386,19 +398,7 @@ export default class Container extends React.Component {
 							</p>
 							<p>
 								<strong>Low 24 Hours:</strong>{" "}
-								{e.Low24Hour > 0 ? (
-									<label className="text text-success">
-										{Numeral(e.Low24Hour).format(
-											"$0,0.0000"
-										)}
-									</label>
-								) : (
-									<label className="text text-danger">
-										{Numeral(e.Low24Hour).format(
-											"$0,0.0000"
-										)}
-									</label>
-								)}
+								{Numeral(e.Low24Hour).format("$0,0.0000")}
 							</p>
 						</div>
 					</div>
