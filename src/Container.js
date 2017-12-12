@@ -5,6 +5,7 @@ import FetchCoinPrice from "./helpers/getCoinPrice.js";
 import FetchCoinPricesAndExtras from "./helpers/getCoinPricesAndExtras.js";
 import Numeral from "numeral";
 import { debounce, throttle } from "lodash";
+import getQueryStringParameterByName from './helpers/queryString.js';
 
 //Anastacio Gianareas Palm
 
@@ -22,7 +23,8 @@ export default class Container extends React.Component {
 			totalPrice: 0.0,
 			showPredictor: false,
 			predictorObject: null,
-			investedSoFar: 0
+			investedSoFar: 0,
+			preview: false
 		};
 		this.db = null;
 		this.addNewCryptoHandler = debounce(this.addNewCrypto, 2000);
@@ -33,18 +35,27 @@ export default class Container extends React.Component {
 	}
 
 	componentDidMount() {
-		let email = localStorage.getItem("email");
-		if (!email) {
-			email = prompt("What is your email?").toLocaleLowerCase();
-			localStorage.setItem("email", email);
+		let email;
+		console.log(getQueryStringParameterByName("user"))
+		if (getQueryStringParameterByName("user")) {
+			email = getQueryStringParameterByName("user");
+			this.setState({
+				preview: true
+			})
+		} else {
+			email = localStorage.getItem("email");
+			if (!email) {
+				console.log(email)
+				try {
+					email = prompt("What is your email?").toLocaleLowerCase();
+				} catch (e) { }
+				localStorage.setItem("email", email);
+			}
 		}
 		this.setState({ email: email }, () => {
 			try {
 				this.initFireBase();
 				this.fetchClientCrypto();
-
-				//Fetch each coin price
-				//	setInterval(this.fetchCoinPricesAndCalculate.bind(this), 60000);
 			} catch (e) {
 				alert(e);
 			}
@@ -99,9 +110,9 @@ export default class Container extends React.Component {
 			.doc(mycoins[index].id)
 			.update({
 				Amount:
-					parseFloat(mycoins[index].Amount) !== NaN
-						? parseFloat(mycoins[index].Amount)
-						: 0,
+				parseFloat(mycoins[index].Amount) !== NaN
+					? parseFloat(mycoins[index].Amount)
+					: 0,
 				CoinName: mycoins[index].CoinName,
 				Symbol: mycoins[index].Symbol
 			})
@@ -181,7 +192,7 @@ export default class Container extends React.Component {
 					investedSoFar: invested
 				});
 			})
-			.then(() => {})
+			.then(() => { })
 			.catch(error => {
 				console.log("Error getting documents: ", error);
 			});
@@ -198,7 +209,7 @@ export default class Container extends React.Component {
 			.then(querySnapshot => {
 				let mycoins = [];
 				let coin = {};
-				querySnapshot.forEach(function(doc) {
+				querySnapshot.forEach(function (doc) {
 					coin = doc.data();
 					coin.id = doc.id;
 
@@ -299,8 +310,8 @@ export default class Container extends React.Component {
 							{Numeral(e.Amount).format("$0,0.000000000")}
 						</p>
 					) : (
-						<span />
-					)}
+							<span />
+						)}
 					<button
 						className="btn btn-info"
 						onClick={() => {
@@ -319,7 +330,7 @@ export default class Container extends React.Component {
 			borderRadius: "4px",
 			padding: "10px"
 		};
-		const { mycoins } = this.state;
+		const { mycoins, preview } = this.state;
 		return mycoins.map((e, i) => {
 			return (
 				<div key={i} style={border}>
@@ -354,27 +365,31 @@ export default class Container extends React.Component {
 						<div className="col-sm-6 col-xs-6">
 							<p>
 								<strong>Name: </strong>
-								<input
-									type="text"
-									className="form-control"
-									value={e.CoinName}
-									onChange={e => {
-										e.persist();
-										this.changeCrypto(i, e, "CoinName");
-									}}
-								/>
+								{preview ? <label>{e.CoinName}</label> :
+									<input
+										type="text"
+										className="form-control"
+										value={e.CoinName}
+										onChange={e => {
+											e.persist();
+											this.changeCrypto(i, e, "CoinName");
+										}}
+									/>}
 							</p>
 							<p>
 								<strong>Symbol: </strong>
-								<input
-									className="form-control"
-									type="text"
-									value={e.Symbol}
-									onChange={e => {
-										e.persist();
-										this.changeCrypto(i, e, "Symbol");
-									}}
-								/>
+								{preview ? <label>{e.Symbol}</label> :
+									<input
+										className="form-control"
+										type="text"
+										value={e.Symbol}
+										onChange={e => {
+											e.persist();
+											this.changeCrypto(i, e, "Symbol");
+										}}
+
+									/>
+								}
 							</p>
 							<p>
 								<strong>
@@ -383,15 +398,17 @@ export default class Container extends React.Component {
 										"0,0.00000000000"
 									)}
 								</strong>
-								<input
-									type="text"
-									className="form-control"
-									value={e.Amount}
-									onChange={e => {
-										e.persist();
-										this.changeCrypto(i, e, "Amount");
-									}}
-								/>
+								{preview ? <label>{e.Amount}</label> :
+									<input
+										type="text"
+										className="form-control"
+										value={e.Amount}
+										onChange={e => {
+											e.persist();
+											this.changeCrypto(i, e, "Amount");
+										}}
+									/>
+								}
 							</p>
 							<p>
 								<strong>Current Price:</strong>{" "}
@@ -418,12 +435,12 @@ export default class Container extends React.Component {
 										)}
 									</label>
 								) : (
-									<label className="text text-danger">
-										{Numeral(e.ChangeDay).format(
-											"$0,0.0000"
-										)}
-									</label>
-								)}
+										<label className="text text-danger">
+											{Numeral(e.ChangeDay).format(
+												"$0,0.0000"
+											)}
+										</label>
+									)}
 							</p>
 							<p>
 								<strong>Open Day:</strong>{" "}
@@ -449,12 +466,12 @@ export default class Container extends React.Component {
 										)}
 									</label>
 								) : (
-									<label className="text text-danger">
-										{Numeral(e.Change24Hour).format(
-											"$0,0.0000"
-										)}
-									</label>
-								)}
+										<label className="text text-danger">
+											{Numeral(e.Change24Hour).format(
+												"$0,0.0000"
+											)}
+										</label>
+									)}
 							</p>
 							<p>
 								<strong>Open 24 Hour: </strong>{" "}
@@ -470,13 +487,15 @@ export default class Container extends React.Component {
 							</p>
 						</div>
 					</div>
-					<button
-						className="btn btn-danger"
-						onClick={e => {
-							this.deleteCryptoHandler(i);
-						}}>
-						Delete Coin
+					{preview ? <span></span> :
+						<button
+							className="btn btn-danger"
+							onClick={e => {
+								this.deleteCryptoHandler(i);
+							}}>
+							Delete Coin
 					</button>
+					}
 				</div>
 			);
 		});
@@ -578,7 +597,7 @@ export default class Container extends React.Component {
 							{Numeral(
 								(predictorObject.Amount -
 									predictorObject.OriginalAmount) *
-									predictorObject.CurrentPrice
+								predictorObject.CurrentPrice
 							).format("$0,0.0000")}
 						</strong>
 					</i>
