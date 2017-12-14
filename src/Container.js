@@ -24,7 +24,8 @@ export default class Container extends React.Component {
 			showPredictor: false,
 			predictorObject: null,
 			investedSoFar: 0,
-			preview: false
+			preview: false,
+			loading: false
 		};
 		this.db = null;
 		this.addNewCryptoHandler = debounce(this.addNewCrypto, 2000);
@@ -87,7 +88,8 @@ export default class Container extends React.Component {
 		});
 	}
 	addNewCrypto() {
-		const { email } = this.state;
+		const { email, loading } = this.state;
+		this.setState({ loading: true });
 		this.db
 			.collection("Crypto")
 			.add({
@@ -97,14 +99,16 @@ export default class Container extends React.Component {
 				email: email
 			})
 			.then(() => {
-				//this.fetchClientCrypto();
+				this.fetchClientCrypto();
+				this.setState({ loading: false });
 			})
 			.catch(error => {
 				console.error("Error adding document: ", error);
 			});
 	}
 	updateCrypto(index) {
-		const { mycoins } = this.state;
+		const { mycoins, loading } = this.state;
+		this.setState({ loading: true });
 		this.db
 			.collection("Crypto")
 			.doc(mycoins[index].id)
@@ -118,6 +122,7 @@ export default class Container extends React.Component {
 			})
 			.then(() => {
 				//this.fetchClientCrypto();
+				this.setState({ loading: false });
 			})
 			.catch(error => {
 				console.error("Error adding document: ", error);
@@ -125,13 +130,15 @@ export default class Container extends React.Component {
 	}
 	deleteCrypto(index) {
 		if (window.confirm("Are you sure you want to delete?")) {
-			const { mycoins } = this.state;
+			const { mycoins, loading } = this.state;
+			this.setState({ loading: true });
 			this.db
 				.collection("Crypto")
 				.doc(mycoins[index].id)
 				.delete()
 				.then(() => {
 					this.fetchClientCrypto();
+					this.setState({ loading: false });
 				})
 				.catch(error => {
 					console.error("Error adding document: ", error);
@@ -145,7 +152,7 @@ export default class Container extends React.Component {
 		if (t === "Symbol") coins[index].Symbol = e.target.value;
 		if (t === "Amount") coins[index].Amount = e.target.value;
 
-		this.setState({ mycoins: coins });
+		this.setState({ mycoins: coins, loading: true });
 		this.updateCryptoHandler(index);
 	}
 
@@ -177,19 +184,21 @@ export default class Container extends React.Component {
 	fetchClientInvestedAmount() {
 		if (this.db === null) return;
 
-		const { investedSoFar, email } = this.state;
+		const { investedSoFar, email, loading } = this.state;
+		this.setState({ loading: true });
 		this.db
 			.collection("Invested")
 			.where("email", "==", email)
 			.get()
 			.then(querySnapshot => {
-				debugger;
+
 				let invested = Object({}, investedSoFar);
 				invested = querySnapshot.data();
 				invested.id = querySnapshot.is;
 
 				this.setState({
-					investedSoFar: invested
+					investedSoFar: invested,
+					loading: false
 				});
 			})
 			.then(() => { })
@@ -200,8 +209,8 @@ export default class Container extends React.Component {
 	fetchClientCrypto() {
 		if (this.db === null) return;
 
-		const { email } = this.state;
-
+		const { email, loading } = this.state;
+		this.setState({ loading: true });
 		this.db
 			.collection("Crypto")
 			.where("email", "==", email)
@@ -223,6 +232,7 @@ export default class Container extends React.Component {
 			.then(() => {
 				console.info("fetched client coins");
 				this.fetchCoinPricesAndCalculate();
+				this.setState({ loading: false });
 			})
 			.catch(error => {
 				console.log("Error getting documents: ", error);
@@ -330,6 +340,7 @@ export default class Container extends React.Component {
 			borderRadius: "4px",
 			padding: "10px"
 		};
+
 		const { mycoins, preview } = this.state;
 		return mycoins.map((e, i) => {
 			return (
@@ -606,8 +617,17 @@ export default class Container extends React.Component {
 		);
 	}
 	render() {
-		const { mycoins, showPredictor, totalPrice, coins } = this.state;
+		const { mycoins, showPredictor, totalPrice, coins, loading } = this.state;
 		if (showPredictor) return this.renderPredictor();
+
+		let isLoading = loading ? <div style={{
+			position: "fixed", margin: "auto", textAlign: "center", zIndex: "999",
+			left: "45%",
+			top: "50%",
+			fontSize: "24px",
+			fontWeight: "600" }}>
+			<p className="text text-warning"> Loading...</p>
+		</div>: <span></span>
 
 		return (
 			<div className="col-sm-12 col-xs-12">
@@ -615,6 +635,7 @@ export default class Container extends React.Component {
 					<div className="col-sm-12 col-xs-12">
 						<h4 className="text-center">Crypto Price Tracker</h4>
 					</div>
+					{isLoading}
 
 					<div className="col-sm-12 col-xs-12">
 						<p>
