@@ -25,7 +25,8 @@ export default class Container extends React.Component {
 			predictorObject: null,
 			investedSoFar: 0,
 			preview: false,
-			loading: false
+			loading: false,
+			cost: localStorage.getItem("cost") ? parseFloat(localStorage.getItem("cost")) : 0
 		};
 		this.db = null;
 		this.addNewCryptoHandler = debounce(this.addNewCrypto, 2000);
@@ -80,6 +81,7 @@ export default class Container extends React.Component {
 	}
 
 	//Handlers
+
 	predictor(coin) {
 		let newCoin = JSON.parse(JSON.stringify(coin)); //To avoid shallow from object.assign
 		newCoin.OriginalAmount = newCoin.Amount;
@@ -617,7 +619,7 @@ export default class Container extends React.Component {
 		);
 	}
 	render() {
-		const { mycoins, showPredictor, totalPrice, coins, loading } = this.state;
+		const { mycoins, showPredictor, totalPrice, coins, loading, preview, cost } = this.state;
 		if (showPredictor) return this.renderPredictor();
 
 		let isLoading = loading ? <div style={{
@@ -625,9 +627,33 @@ export default class Container extends React.Component {
 			left: "45%",
 			top: "50%",
 			fontSize: "24px",
-			fontWeight: "600" }}>
+			fontWeight: "600"
+		}}>
 			<p className="text text-warning"> Loading...</p>
-		</div>: <span></span>
+		</div> : <span></span>
+
+		let buttons = (!preview ?
+			<div>
+				<button
+					className="btn btn-primary"
+					onClick={
+						e => {
+							this.addNewCryptoHandler();
+						}
+					} >
+					Add New Coin
+						</button > {" "}
+				{" "}
+				<button
+					className="btn btn-warning"
+					onClick={e => {
+						localStorage.clear();
+						window.location.reload();
+					}}>
+					Logoff
+						</button>
+			</div> :
+			<span></span>)
 
 		return (
 			<div className="col-sm-12 col-xs-12">
@@ -643,23 +669,25 @@ export default class Container extends React.Component {
 							<label className="text-success">
 								{Numeral(totalPrice).format("$0,0.000")}
 							</label>
+
+							{cost > 0 ?
+								<label className="text-primary">
+									({Numeral(((totalPrice - cost) / cost)).format("0.00%")})
+								</label> :
+								<span />}
+
+							<button className="btn btn-info btn-sm" onClick={(e) => {
+								let quantity = prompt("Please enter how much crypto you bought in USD dolars for. (Example, $650 <- in bitcoins, eth) ");
+								if (parseFloat(quantity)) {
+									this.setState({ cost: quantity }, () => {
+										localStorage.setItem("cost", this.state.cost)
+									})
+								}
+							}}> Expenses {Numeral(cost).format("$0,0.000")}</button>
+
 						</p>
-						<button
-							className="btn btn-primary"
-							onClick={e => {
-								this.addNewCryptoHandler();
-							}}>
-							Add New Coin
-						</button>{" "}
-						{" "}
-						<button
-							className="btn btn-warning"
-							onClick={e => {
-								localStorage.clear();
-								window.location.reload();
-							}}>
-							Logoff
-						</button>
+						{buttons}
+
 						<br /> <br />
 						{this.renderMyCoins()}
 					</div>
