@@ -655,45 +655,49 @@ export default class Container extends React.Component {
 					{isLoading}
 
 					<div className="col-sm-12 col-xs-12">
-						<p>
-							My Coins ({mycoins.length}){" "}
-							<label className="text-success">
-								{Numeral(totalPrice).format("$0,0.000")}
-							</label>
+						<div className="row">
+							<p>
+								My Coins ({mycoins.length}){" "}
+								<label className="text-success">
+									{Numeral(totalPrice).format("$0,0.000")}
+								</label>
 
-							{cost > 0 ?
-								<label className="text-primary">
-									({Numeral(((totalPrice - cost) / cost)).format("0.00%")})
+								{cost > 0 ?
+									<label className="text-primary">
+										({Numeral(((totalPrice - cost) / cost)).format("0.00%")})
 								</label> :
-								<span />}
+									<span />}
 
-							<button className="btn btn-info btn-sm" onClick={(e) => {
-								let quantity = prompt("Please enter how much crypto you bought in USD dolars for. (Example, $650 <- in bitcoins, eth) ");
-								if (parseFloat(quantity)) {
-									this.setState({ cost: quantity }, () => {
-										localStorage.setItem("cost", this.state.cost)
-									})
-								}
-							}}> Expenses {Numeral(cost).format("$0,0.000")}</button>
+								<button className="btn btn-info btn-sm" onClick={(e) => {
+									let quantity = prompt("Please enter how much crypto you bought in USD dolars for. (Example, $650 <- in bitcoins, eth) ");
+									if (parseFloat(quantity)) {
+										this.setState({ cost: quantity }, () => {
+											localStorage.setItem("cost", this.state.cost)
+										})
+									}
+								}}> Expenses {Numeral(cost).format("$0,0.000")}</button>
 
-						</p>
-						{buttons}
+							</p>
+							{buttons}
 
-						<br /> <br />
-						{this.renderMyCoins()}
+							<br /> <br />
+							{this.renderMyCoins()}
+						</div>
 					</div>
 
 					<div className="col-sm-12 col-xs-12">
-						<p>
-							List of Coins{" "}
-							{coins.length === 0 ? 0 : coins.length + 1}
-						</p>
-						<button
-							className="btn btn-info"
-							onClick={this.fetchAllCoins}>
-							Fetch all Coins
+						<div className="row">
+							<p>
+								List of Coins{" "}
+								{coins.length === 0 ? 0 : coins.length + 1}
+							</p>
+							<button
+								className="btn btn-info"
+								onClick={this.fetchAllCoins}>
+								Fetch all Coins
 						</button>
-						{this.renderCoins()}
+							{this.renderCoins()}
+						</div>
 					</div>
 				</div>
 			</div>
