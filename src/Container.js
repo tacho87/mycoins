@@ -38,7 +38,7 @@ export default class Container extends React.Component {
 
 	componentDidMount() {
 		let email;
-		console.log(getQueryStringParameterByName("user"))
+
 		if (getQueryStringParameterByName("user")) {
 			email = getQueryStringParameterByName("user");
 			this.setState({
@@ -54,14 +54,20 @@ export default class Container extends React.Component {
 				localStorage.setItem("email", email);
 			}
 		}
-		this.setState({ email: email }, () => {
-			try {
-				this.initFireBase();
-				this.fetchClientCrypto();
-			} catch (e) {
-				alert(e);
-			}
-		});
+		if (email) {
+			this.setState({ email: email }, () => {
+				try {
+					this.initFireBase();
+					this.fetchClientCrypto();
+				} catch (e) {
+					alert(e);
+				}
+			});
+		}
+		else {
+			alert("You forgot to add an email, please refresh");
+		}
+
 	}
 	//Logic
 	calculateTotalAmount() {
@@ -345,7 +351,12 @@ export default class Container extends React.Component {
 
 		const { mycoins, preview } = this.state;
 		return mycoins.map((e, i) => {
+			let goingUp = false;
+			if (e.Change24Hour > 0)
+				goingUp = true;
+
 			return (
+
 				<div key={i} style={border}>
 					<div className="row">
 						<div className="col-xs-12 col-sm-12">
@@ -437,39 +448,18 @@ export default class Container extends React.Component {
 							</p>
 						</div>
 						<div className="col-sm-6 col-xs-6">
-							<h5 className="text text-primary">Open Day</h5>
+							{goingUp ?
 
-							<p>
-								<strong>Change Day:</strong>{" "}
-								{e.ChangeDay > 0 ? (
-									<label className="text text-success">
-										{Numeral(e.ChangeDay).format(
-											"$0,0.0000"
-										)}
-									</label>
-								) : (
-										<label className="text text-danger">
-											{Numeral(e.ChangeDay).format(
-												"$0,0.0000"
-											)}
-										</label>
-									)}
-							</p>
-							<p>
-								<strong>Open Day:</strong>{" "}
-								{Numeral(e.OpenDay).format("$0,0.0000")}
-							</p>
-							<p>
-								<strong>High Day:</strong>{" "}
-								{Numeral(e.HighDay).format("$0,0.0000")}
-							</p>
-							<p>
-								<strong>Low Day:</strong>{" "}
-								{Numeral(e.LowDay).format("$0,0.0000")}
-							</p>
-
+								<div><h1 className="text text-success text-center">
+									<i className=" faa-flash animated fa fa-arrow-up" aria-hidden="true"></i>
+								</h1>
+								</div> :
+								<div>
+									<h1 className="text text-danger text-center">
+										<i className=" faa-flash animated fa fa-arrow-down" aria-hidden="true"></i>
+									</h1>
+								</div>}
 							<h5 className="text text-primary">Open 24 Hours</h5>
-
 							<p>
 								<strong>Change 24 Hours:</strong>{" "}
 								{e.Change24Hour > 0 ? (
@@ -498,6 +488,7 @@ export default class Container extends React.Component {
 								<strong>Low 24 Hours:</strong>{" "}
 								{Numeral(e.Low24Hour).format("$0,0.0000")}
 							</p>
+
 						</div>
 					</div>
 					{preview ? <span></span> :
@@ -619,7 +610,7 @@ export default class Container extends React.Component {
 		);
 	}
 	render() {
-		const { mycoins, showPredictor, totalPrice, coins, loading, preview, cost } = this.state;
+		const { mycoins, showPredictor, totalPrice, coins, loading, preview, cost, email } = this.state;
 		if (showPredictor) return this.renderPredictor();
 
 		let isLoading = loading ? <div style={{
@@ -659,7 +650,7 @@ export default class Container extends React.Component {
 			<div className="col-sm-12 col-xs-12">
 				<div className="row">
 					<div className="col-sm-12 col-xs-12">
-						<h4 className="text-center">Crypto Price Tracker</h4>
+						<h4 className="text-center">Crypto Price Tracker - {email}</h4>
 					</div>
 					{isLoading}
 
