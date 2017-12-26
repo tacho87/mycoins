@@ -305,7 +305,8 @@ export default class Container extends React.Component {
 		let border = {
 			border: "solid thin #cac7c7",
 			borderRadius: "4px",
-			padding: "10px"
+			padding: "10px",
+			marginBottom: "4px"
 		};
 		const { coins } = this.state;
 		return coins.map((e, i) => {
@@ -344,8 +345,7 @@ export default class Container extends React.Component {
 
 	renderMyCoins() {
 		let border = {
-			border: "solid thin #cac7c7",
-			borderRadius: "4px",
+			border: "solid thin",
 			padding: "10px"
 		};
 
@@ -357,7 +357,7 @@ export default class Container extends React.Component {
 
 			return (
 
-				<div key={i} style={border}>
+				<div className="col-md-6 col-xs-12" key={i} style={border}>
 					<div className="row">
 						<div className="col-xs-12 col-sm-12">
 							<label className="text text-primary pull-left">
@@ -647,60 +647,66 @@ export default class Container extends React.Component {
 			<span></span>)
 
 		return (
-			<div className="col-sm-12 col-xs-12">
-				<div className="row">
-					<div className="col-sm-12 col-xs-12">
-						<h4 className="text-center">Crypto Price Tracker - {email}</h4>
-					</div>
-					{isLoading}
+			<div>
+				<div className="col-sm-12 col-xs-12">
 
-					<div className="col-sm-12 col-xs-12">
-						<div className="row">
-							<p>
-								My Coins ({mycoins.length}){" "}
-								<label className="text-success">
-									{Numeral(totalPrice).format("$0,0.000")}
-								</label>
+					<h4 className="text-center">Crypto Price Tracker - {email}</h4>
 
-								{cost > 0 ?
-									<label className="text-primary">
-										({Numeral(((totalPrice - cost) / cost)).format("0.00%")})
+				</div>
+				{isLoading}
+
+				<div className="col-sm-12 col-xs-12">
+					<div className="row">
+						<p>
+							My Coins ({mycoins.length}){" "}
+							<label className="text-success">
+								{Numeral(totalPrice).format("$0,0.000")}
+							</label>
+
+							{cost > 0 ?
+								<label className="text-primary">
+									({Numeral(((totalPrice - cost) / cost)).format("0.00%")})
 								</label> :
-									<span />}
+								<span />}
 
-								<button className="btn btn-info btn-sm" onClick={(e) => {
-									let quantity = prompt("Please enter how much crypto you bought in USD dolars for. (Example, $650 <- in bitcoins, eth) ");
-									if (parseFloat(quantity)) {
-										this.setState({ cost: quantity }, () => {
-											localStorage.setItem("cost", this.state.cost)
-										})
-									}
-								}}> Expenses {Numeral(cost).format("$0,0.000")}</button>
+							<button className="btn btn-info
+							" onClick={(e) => {
+								let quantity = prompt("Please enter how much crypto you bought in USD dolars for. (Example, $650 <- in bitcoins, eth) ");
+								if (parseFloat(quantity)) {
+									this.setState({ cost: quantity }, () => {
+										localStorage.setItem("cost", this.state.cost)
+									})
+								}
+							}}> Expenses {Numeral(cost).format("$0,0.000")}</button>
 
-							</p>
-							{buttons}
+						</p>
+						{buttons}
 
-							<br /> <br />
-							{this.renderMyCoins()}
-						</div>
-					</div>
-
-					<div className="col-sm-12 col-xs-12">
-						<div className="row">
-							<p>
-								List of Coins{" "}
-								{coins.length === 0 ? 0 : coins.length + 1}
-							</p>
-							<button
-								className="btn btn-info"
-								onClick={this.fetchAllCoins}>
-								Fetch all Coins
-						</button>
-							{this.renderCoins()}
+						<br /> <br />
+						<div className="col-sm-12 col-xs-12">
+							<div className="row">
+								{this.renderMyCoins()}
+							</div>
 						</div>
 					</div>
 				</div>
+
+				<div className="col-sm-12 col-xs-12">
+					<div className="row">
+						<p>
+							List of Coins{" "}
+							{coins.length === 0 ? 0 : coins.length + 1}
+						</p>
+						<button
+							className="btn btn-info"
+							onClick={this.fetchAllCoins}>
+							Fetch all Coins
+						</button>
+						{this.renderCoins()}
+					</div>
+				</div>
 			</div>
+
 		);
 	}
 }
